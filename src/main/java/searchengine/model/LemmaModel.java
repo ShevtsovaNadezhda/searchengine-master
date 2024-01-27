@@ -6,26 +6,25 @@ import lombok.Setter;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
-@Table(name = "page", indexes = @Index(name = "path_index", columnList = "path"))
+@Table(name = "lemma")
 @NoArgsConstructor
 @Getter
 @Setter
-public class PageModel {
+public class LemmaModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="site_id", nullable = false, updatable = false)
-    private SiteModel site;
+    @ManyToMany(mappedBy = "lemmas")
+    private List<SiteModel> sites = new ArrayList<>();
 
     @Column(columnDefinition = "VARCHAR(255)", nullable = false)
-    private String path;
+    private String lemma;
 
     @Column(columnDefinition = "INT", nullable = false)
-    private int code;
-
-    @Column(columnDefinition = "MEDIUMTEXT", nullable = false)
-    private String content;
+    private int frequency;
 }

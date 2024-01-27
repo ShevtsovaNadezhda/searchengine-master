@@ -1,13 +1,17 @@
 package searchengine.model;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "site")
+@NoArgsConstructor
 @Getter
 @Setter
 public class SiteModel {
@@ -30,4 +34,10 @@ public class SiteModel {
 
     @Column(columnDefinition = "VARCHAR(255)", nullable = false)
     private String name;
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinTable(name = "site_lemma",
+            joinColumns = @JoinColumn(name = "site_id"),
+            inverseJoinColumns = @JoinColumn(name = "lemma_id"))
+    private List<LemmaModel> lemmas = new ArrayList<>();
 }
