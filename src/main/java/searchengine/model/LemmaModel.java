@@ -19,12 +19,12 @@ public class LemmaModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @ManyToMany(mappedBy = "lemmas")
-    private List<SiteModel> sites = new ArrayList<>();
+    //@ManyToMany(mappedBy = "lemmas")
+    //private List<SiteModel> sites = new ArrayList<>();
 
     @Column(columnDefinition = "VARCHAR(255)", nullable = false)
     private String lemma;
 
-    @Column(columnDefinition = "INT", nullable = false)
-    private int frequency;
+    //@Column(columnDefinition = "INT", nullable = false)
+    //private int frequency;
 }
