@@ -6,8 +6,8 @@ import lombok.Setter;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ForkJoinPool;
 
 @Entity
 @Table(name = "site")
@@ -40,4 +40,12 @@ public class SiteModel {
             joinColumns = @JoinColumn(name = "site_id"),
             inverseJoinColumns = @JoinColumn(name = "lemma_id"))
     private List<LemmaModel> lemmas = new ArrayList<>();
+
+    @OneToMany (mappedBy="site", fetch=FetchType.LAZY)
+    private Set<PageModel> pages = new HashSet<>();
+
+    public void add(PageModel page) {
+        pages.add(page);
+    }
+
 }

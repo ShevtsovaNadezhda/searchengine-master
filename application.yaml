@@ -9,16 +9,14 @@ spring:
   jpa:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
-        ddl-auto: create
+        ddl-auto: update
       show-sql: true
 
 # example values
 
 indexing-settings:
   sites:
-    - url: https://www.lenta.ru
-      name: Лента.ру
-    - url: https://www.skillbox.ru
-      name: Skillbox
-    - url: https://www.playback.ru
-      name: PlayBack.Ru
+    - url: https://fabgroom-msk.ru
+      name: Грумминг Москва
+    - url: https://vok36.ru
+      name: Офтальмологическая клиника Воронеж
