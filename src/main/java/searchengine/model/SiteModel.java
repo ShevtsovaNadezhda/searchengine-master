@@ -41,7 +41,7 @@ public class SiteModel {
             inverseJoinColumns = @JoinColumn(name = "lemma_id"))
     private List<LemmaModel> lemmas = new ArrayList<>();
 
-    @OneToMany (mappedBy="site", fetch=FetchType.LAZY)
+    @OneToMany (cascade = CascadeType.REMOVE, mappedBy="site", fetch=FetchType.LAZY)
     private Set<PageModel> pages = new HashSet<>();
 
     public void add(PageModel page) {

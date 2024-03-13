@@ -12,12 +12,15 @@ public class PageParser extends RecursiveAction {
     private SiteModel site;
     private PageModel nodePage;
 
+    private volatile SiteRepo siteRepo;
+    private volatile PageRepo pageRepo;
 
-    public PageParser(SiteModel site, PageModel nodePage) {
+
+    public PageParser(SiteModel site, PageModel nodePage, SiteRepo siteRepo, PageRepo pageRepo) {
         this.site = site;
         this.nodePage = nodePage;
-
-
+        this.siteRepo = siteRepo;
+        this.pageRepo = pageRepo;
     }
 
     @Override
@@ -35,18 +38,17 @@ public class PageParser extends RecursiveAction {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        site.add(nodePage);
-        /*if (!site.getPages().contains(nodePage)) {
+
+        if (!site.getPages().contains(nodePage)) {
             site.add(nodePage);
             pageRepo.save(nodePage);
-            *//*site.setStatusTime(LocalDateTime.now());
-            siteRepo.save(site);*//*
-        }*/
-
+            //site.setStatusTime(LocalDateTime.now());
+            //siteRepo.save(site);
+        }
 
         for (PageModel node : nodes) {
             if (!site.getPages().contains(node)) {
-                PageParser task = new PageParser(site, node);
+                PageParser task = new PageParser(site, node, siteRepo, pageRepo);
                 taskList.add(task);
                 task.fork();
             }

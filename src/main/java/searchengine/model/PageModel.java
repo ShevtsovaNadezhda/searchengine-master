@@ -30,7 +30,6 @@ public class PageModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @JsonIgnore
     @ManyToOne //(cascade = CascadeType.ALL)
     @JoinColumn(name="site_id", nullable = false, updatable = false)
     private SiteModel site;
@@ -57,7 +56,7 @@ public class PageModel {
             connection.connect();
             statusCode = connection.getResponseCode();
             connection.disconnect();
-        } catch (UnknownHostException e) {
+        } catch (UnknownHostException | RuntimeException e) {
             e.printStackTrace();
         }
         setCode(statusCode);

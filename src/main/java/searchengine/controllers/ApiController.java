@@ -1,7 +1,5 @@
 package searchengine.controllers;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,14 +12,10 @@ import searchengine.repositories.PageRepo;
 import searchengine.repositories.SiteRepo;
 import searchengine.services.StatisticsService;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.*;
 
 
 @RestController
@@ -29,7 +23,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class ApiController {
 
     private final SitesList sites;
-    private boolean isRunning = false;
+    private boolean indexingIsRunning = false;
 
     @Autowired
     private SiteRepo siteRepo;
@@ -49,33 +43,37 @@ public class ApiController {
     }
 
     @GetMapping("/startindexing")
-    public boolean startIndexing() throws Exception{
-        List<SiteModel> sitesInFile = new ArrayList<>();
-        sites.getSites().forEach(site -> {
-            SiteModel siteModel = new SiteModel();
-            siteModel.setUrl(site.getUrl());
-            siteModel.setName(site.getName());
-            sitesInFile.add(siteModel);
-        });
+    public Response startIndexing() throws Exception{
+        if (indexingIsRunning) {
+            Response response = new Response();
+            response.setResult(false);
+            response.setError("Индексация уже запущена");
+            return response;
+        } else {
+            indexingIsRunning = true;
+            List<SiteModel> sitesInFile = new ArrayList<>();
+            sites.getSites().forEach(site -> {
+                SiteModel siteModel = new SiteModel();
+                siteModel.setUrl(site.getUrl());
+                siteModel.setName(site.getName());
+                sitesInFile.add(siteModel);
+            });
 
-        deleteSiteInBase(sitesInFile);
-        addSiteInBase(sitesInFile);
-        return true;
-
+            deleteSiteInBase(sitesInFile);
+            addSiteInBase(sitesInFile);
+            Response response = new Response();
+            response.setResult(true);
+            indexingIsRunning = false;
+            return response;
+        }
     }
 
     //Ищем в БД сайты из конфигурационного файла, удаляем записи
     public void deleteSiteInBase(List<SiteModel> siteList) throws Exception{
         Iterable<SiteModel> siteIterable = siteRepo.findAll();
-        Iterable<PageModel> pageIterable = pageRepo.findAll();
         for (SiteModel siteInList : siteList) {
             for (SiteModel site : siteIterable) {
                 if (siteInList.getUrl().equalsIgnoreCase(site.getUrl())) {
-                    for (PageModel page : pageIterable) {
-                        if (page.getSite().getId() == site.getId()) {
-                            pageRepo.delete(page);
-                        }
-                    }
                     siteRepo.delete(site);
                 }
             }
@@ -83,47 +81,46 @@ public class ApiController {
     }
 
     //Создаем новые записи в БД согласно списку
-    public void addSiteInBase(List<SiteModel> siteList) {
-        /*siteList.forEach(s -> {
-            SiteParsing siteParsing = new SiteParsing(s);
-            Thread thread = new Thread(siteParsing);
-            thread.start();
-            try {
-                thread.join();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            siteRepo.save(s);
-            s.getPages().forEach(p -> pageRepo.save(p));
-        });*/
-
+    public void addSiteInBase(List<SiteModel> siteList) throws InterruptedException {
+        ExecutorService service = Executors.newFixedThreadPool(siteList.size());
         siteList.forEach(s -> {
-            s.setStatus(StatusEnum.INDEXING);
-            s.setStatusTime(LocalDateTime.now());
-            siteRepo.save(s);
+            service.submit(() -> {
+                s.setStatus(StatusEnum.INDEXING);
+                s.setStatusTime(LocalDateTime.now());
+                siteRepo.save(s);
 
-            PageModel root = new PageModel();
-            root.setSite(s);
-            root.setPath("/");
-            root.setContent("Indexing");
+                PageModel root = new PageModel();
+                root.setSite(s);
+                root.setPath("/");
+                root.setContent("Indexing");
 
-            s.add(root);
+                new ForkJoinPool(8).invoke(new PageParser(s, root, siteRepo, pageRepo));
 
-            new ForkJoinPool(8).invoke(new PageParser(s, root));
-
-            s.getPages().forEach(page -> pageRepo.save(page));
-            s.setStatus(StatusEnum.INDEXED);
-            s.setStatusTime(LocalDateTime.now());
-            siteRepo.save(s);
+                s.setStatus(StatusEnum.INDEXED);
+                s.setStatusTime(LocalDateTime.now());
+                siteRepo.save(s);
+            });
         });
+
+        service.shutdown();
+        if (service.awaitTermination(1, TimeUnit.HOURS)) {
+            System.out.println("Все сайты проиндексированы");
+        } else {
+            service.shutdownNow();
+        }
     }
 
     @GetMapping("/stopindexing")
-    public boolean stopIndexing() {
-        if (isRunning) {
-            return true;
+    public Response stopIndexing() {
+        Response response = new Response();
+        if (indexingIsRunning) {
+            Thread.currentThread().interrupt();
+            response.setResult(true);
+            indexingIsRunning = false;
         } else {
-            return false;
+            response.setResult(false);
+            response.setError("Индексация не запущена");
         }
+        return response;
     }
 }
