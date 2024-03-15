@@ -24,6 +24,7 @@ public class ApiController {
 
     private final SitesList sites;
     private boolean indexingIsRunning = false;
+    private ExecutorService service;
 
     @Autowired
     private SiteRepo siteRepo;
@@ -82,7 +83,7 @@ public class ApiController {
 
     //Создаем новые записи в БД согласно списку
     public void addSiteInBase(List<SiteModel> siteList) throws InterruptedException {
-        ExecutorService service = Executors.newFixedThreadPool(siteList.size());
+        service = Executors.newFixedThreadPool(siteList.size());
         siteList.forEach(s -> {
             service.submit(() -> {
                 s.setStatus(StatusEnum.INDEXING);
@@ -94,8 +95,14 @@ public class ApiController {
                 root.setPath("/");
                 root.setContent("Indexing");
 
-                new ForkJoinPool(8).invoke(new PageParser(s, root, siteRepo, pageRepo));
-
+                try {
+                    new ForkJoinPool(8).invoke(new PageParser(s, root, siteRepo, pageRepo));
+                } catch (Exception exception) {
+                    s.setStatus(StatusEnum.FAILED);
+                    s.setLastError("Не удалось индексировать сайт - " + exception.getMessage());
+                    siteRepo.save(s);
+                    return;
+                }
                 s.setStatus(StatusEnum.INDEXED);
                 s.setStatusTime(LocalDateTime.now());
                 siteRepo.save(s);
@@ -114,7 +121,7 @@ public class ApiController {
     public Response stopIndexing() {
         Response response = new Response();
         if (indexingIsRunning) {
-            Thread.currentThread().interrupt();
+            service.shutdownNow();
             response.setResult(true);
             indexingIsRunning = false;
         } else {
