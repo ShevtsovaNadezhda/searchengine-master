@@ -6,15 +6,12 @@ import lombok.Setter;
 
 import jakarta.persistence.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Entity
 @Table(name = "lemma")
 @NoArgsConstructor
 @Getter
 @Setter
-public class LemmaModel {
+public class Lemma {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;

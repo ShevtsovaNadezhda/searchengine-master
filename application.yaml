@@ -18,7 +18,5 @@ indexing-settings:
   sites:
     - url: https://fabgroom-msk.ru
       name: Грумминг Москва
-    - url: https://vok36.ru
-      name: Офтальмологическая клиника Воронеж
-    - url: https://ipfran.ru
-      name: ИПФРАН
+    - url: https://sendel.ru
+      name: Сайт Константина Шибкова

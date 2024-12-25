@@ -1,6 +1,5 @@
 package searchengine.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,9 +8,6 @@ import jakarta.persistence.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
-import org.springframework.beans.factory.annotation.Autowired;
-import searchengine.controllers.ApiController;
-import searchengine.repositories.PageRepo;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -61,10 +57,20 @@ public class PageModel {
         }
         setCode(statusCode);
 
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
         if (statusCode == 200) {
             Document doc = null;
             try {
-                doc = Jsoup.connect(url).timeout(60000).get();
+                doc = Jsoup.connect(url)
+                        .timeout(200000)
+                        .userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6")
+                        .referrer("http://www.google.com")
+                        .get();
                 setContent(doc.toString());
             } catch (IOException e) {
                 e.printStackTrace();
@@ -101,7 +107,8 @@ public class PageModel {
                 link.endsWith(".doc") ||
                 link.endsWith(".jpg") ||
                 link.endsWith(".png") ||
-                link.endsWith(".jpeg");
+                link.endsWith(".jpeg") ||
+                link.endsWith(".sql");
     }
 
     @Override

@@ -22,7 +22,7 @@ public class IndexModel {
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name="lemma_id", insertable = false, nullable = false, updatable = false)
-    private LemmaModel lemma;
+    private Lemma lemma;
 
     @Column(nullable = false)
     private float ranks;
