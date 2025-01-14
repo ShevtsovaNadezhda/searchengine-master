@@ -9,8 +9,8 @@ import searchengine.model.StatusEnum;
 import searchengine.repositories.PageRepo;
 import searchengine.repositories.SiteRepo;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -113,4 +113,66 @@ public class IndexingServiceImpl implements IndexingService {
         return response;
     }
 
+    @Override
+    public void indexPage(String url) throws IOException {
+        Iterable<PageModel> pageIterable = pageRepo.findAll();
+        boolean pageInRepo = false;
+        for (PageModel page : pageIterable) {
+            if(page.pageUrl().equals(url)) {
+                page.checkStatusCode();
+                if(page.getCode() == 200) {
+                    page.getPageContent();
+                } else {
+                    page.setContent("Страница недоступна");
+                }
+                pageRepo.save(page);
+                pageInRepo = true;
+                System.out.println("Страница обновлена");
+                break;
+            }
+        }
+        if(!pageInRepo) {
+            PageModel newPage = new PageModel();
+
+            Iterable<SiteModel> siteIterable = siteRepo.findAll();
+            for (SiteModel site : siteIterable) {
+                if(url.contains(site.getUrl())) {
+                    newPage.setSite(site);
+                    String path = url.replaceAll(site.getUrl(), "");
+                    newPage.setPath(path);
+                    break;
+                }
+            }
+            newPage.checkStatusCode();
+            if (newPage.getCode() == 200) {
+                newPage.getPageContent();
+            } else {
+                newPage.setContent("Страница недоступна");
+            }
+            pageRepo.save(newPage);
+            System.out.println("Новая страница проиндексирована");
+        }
+    }
+
+    @Override
+    public boolean checkUrl(String url) {
+        return siteService.getSiteList().stream().anyMatch(siteModel -> url.contains(siteModel.getUrl()));
+    }
+
+    @Override
+    public IndexingResponse indexingPageResponse(String url) {
+        IndexingResponse response = new IndexingResponse();
+        if(checkUrl(url)) {
+            try {
+                indexPage(url);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            response.setResult(true);
+        } else {
+            response.setResult(false);
+            response.setError("Данная страница находится за пределами сайтов, указанных в конфигурационном файле");
+        }
+        return response;
+    }
 }
