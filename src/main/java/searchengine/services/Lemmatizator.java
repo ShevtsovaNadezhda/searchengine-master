@@ -21,16 +21,17 @@ public class Lemmatizator {
         this.luceneMorphology = luceneMorphology;
     }
 
-    public static String html2text(String html) {
+    public String html2text(String html) {
         return Jsoup.parse(html).text();
     }
 
     public HashMap<String, Integer> lemmatization(String text) {
+        String newText = html2text(text);
         HashMap<String, Integer> lemmas = new HashMap<>();
 
-        if (!text.isEmpty()) {
-            String[] words = text.toLowerCase()
-                    .replaceAll("([^а-я\\s+])", "")
+        if (!newText.isEmpty()) {
+            String[] words = newText.toLowerCase()
+                    .replaceAll("([^а-я\\s])", "")
                     .trim()
                     .split("\\s+");
 

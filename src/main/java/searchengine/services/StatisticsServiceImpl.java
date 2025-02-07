@@ -8,7 +8,13 @@ import searchengine.dto.statistics.DetailedStatisticsItem;
 import searchengine.dto.statistics.StatisticsData;
 import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.dto.statistics.TotalStatistics;
+import searchengine.model.SiteModel;
+import searchengine.repositories.SiteRepo;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -19,6 +25,7 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     private final Random random = new Random();
     private final SitesList sites;
+    private final SiteRepo siteRepo;
 
     @Override
     public StatisticsResponse getStatistics() {
@@ -34,7 +41,27 @@ public class StatisticsServiceImpl implements StatisticsService {
         total.setIndexing(true);
 
         List<DetailedStatisticsItem> detailed = new ArrayList<>();
-        List<Site> sitesList = sites.getSites();
+        Iterable<SiteModel> siteModelIterable = siteRepo.findAll();
+
+        for (SiteModel s : siteModelIterable) {
+            DetailedStatisticsItem item = new DetailedStatisticsItem();
+            item.setName(s.getName());
+            item.setUrl(s.getUrl());
+            int pages = s.getPages().size();
+            int lemmas = s.getLemmas().size();
+            item.setPages(pages);
+            item.setLemmas(lemmas);
+            item.setStatus(s.getStatus().toString());
+            item.setError(s.getLastError());
+            LocalDateTime statusTime = s.getStatusTime();
+            ZonedDateTime zdt = ZonedDateTime.of(statusTime, ZoneId.systemDefault());
+            item.setStatusTime(zdt.toInstant().toEpochMilli());
+            total.setPages(total.getPages() + pages);
+            total.setLemmas(total.getLemmas() + lemmas);
+            detailed.add(item);
+        }
+
+        /*List<Site> sitesList = sites.getSites();
         for(int i = 0; i < sitesList.size(); i++) {
             Site site = sitesList.get(i);
             DetailedStatisticsItem item = new DetailedStatisticsItem();
@@ -51,7 +78,7 @@ public class StatisticsServiceImpl implements StatisticsService {
             total.setPages(total.getPages() + pages);
             total.setLemmas(total.getLemmas() + lemmas);
             detailed.add(item);
-        }
+        }*/
 
         StatisticsResponse response = new StatisticsResponse();
         StatisticsData data = new StatisticsData();

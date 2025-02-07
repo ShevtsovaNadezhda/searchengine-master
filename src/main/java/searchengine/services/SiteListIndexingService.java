@@ -4,17 +4,13 @@ import searchengine.dto.indexing.IndexingResponse;
 
 import java.io.IOException;
 
-public interface IndexingService {
+public interface SiteListIndexingService {
+    public boolean getIndexing();
     void deleteSiteInBase();
 
-    void addSiteInBase();
+    void indexingSiteList();
 
     IndexingResponse startIndexingResponse();
     IndexingResponse stopIndexingResponse();
-
-    void indexPage(String url) throws IOException;
-
-    boolean checkUrl(String url);
-
     IndexingResponse indexingPageResponse(String url);
 }

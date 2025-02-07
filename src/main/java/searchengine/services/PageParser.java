@@ -16,9 +16,11 @@ public class PageParser extends RecursiveAction {
 
     private SiteRepo siteRepo;
     private PageRepo pageRepo;
-    private IndexingServiceImpl indexingService;
+    private SiteListIndexingServiceImpl indexingService;
 
-    public PageParser(SiteModel site, PageModel nodePage, SiteRepo siteRepo, PageRepo pageRepo, IndexingServiceImpl indexingService) {
+    public PageParser(SiteModel site, PageModel nodePage,
+                      SiteRepo siteRepo, PageRepo pageRepo,
+                      SiteListIndexingServiceImpl indexingService) {
         this.site = site;
         this.nodePage = nodePage;
         this.siteRepo = siteRepo;
@@ -46,6 +48,12 @@ public class PageParser extends RecursiveAction {
             if (!site.getPages().contains(nodePage)) {
                 site.addPageInSet(nodePage);
                 pageRepo.save(nodePage);
+                try {
+                    indexingService.collectLemmas(nodePage);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
                 //site.setStatusTime(LocalDateTime.now());
                 //siteRepo.save(site);
             }

@@ -34,14 +34,17 @@ public class SiteModel {
     @Column(columnDefinition = "VARCHAR(255)", nullable = false)
     private String name;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+   /* @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinTable(name = "site_lemma",
             joinColumns = @JoinColumn(name = "site_id"),
             inverseJoinColumns = @JoinColumn(name = "lemma_id"))
-    private List<Lemma> lemmas = new ArrayList<>();
+    private List<Lemma> lemmas = new ArrayList<>();*/
+
+    @OneToMany (mappedBy="site", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch=FetchType.LAZY)
+    private Set<PageModel> pages = new HashSet<>();
 
     @OneToMany (cascade = CascadeType.REMOVE, mappedBy="site", fetch=FetchType.LAZY)
-    private Set<PageModel> pages = new HashSet<>();
+    private Set<LemmaModel> lemmas = new HashSet<>();
 
     public void addPageInSet(PageModel page) {
         pages.add(page);

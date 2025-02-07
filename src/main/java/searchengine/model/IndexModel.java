@@ -16,13 +16,13 @@ public class IndexModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="page_id", insertable = false, nullable = false, updatable = false)
+    @ManyToOne
+    @JoinColumn(name="page_id", nullable = false, updatable = false)
     private PageModel page;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="lemma_id", insertable = false, nullable = false, updatable = false)
-    private Lemma lemma;
+    @ManyToOne
+    @JoinColumn(name="lemma_id", nullable = false, updatable = false)
+    private LemmaModel lemma;
 
     @Column(nullable = false)
     private float ranks;

@@ -8,12 +8,13 @@ import jakarta.persistence.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import searchengine.services.Lemmatizator;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @Entity
 @Table(name = "page", indexes = @Index(name = "path_index", columnList = "path"))
@@ -25,8 +26,8 @@ public class PageModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @ManyToOne //(cascade = CascadeType.ALL)
-    @JoinColumn(name="site_id", nullable = false, updatable = false)
+    @ManyToOne
+    @JoinColumn(name = "site_id", nullable = false) // updatable = false)
     private SiteModel site;
 
     @Column(columnDefinition = "VARCHAR(255)", nullable = false)
@@ -37,6 +38,9 @@ public class PageModel {
 
     @Column(columnDefinition = "MEDIUMTEXT", nullable = false)
     private String content;
+
+    @OneToMany(cascade = CascadeType.REMOVE, mappedBy = "page", fetch = FetchType.LAZY)
+    private Set<IndexModel> indexes = new HashSet<>();
 
     public HashSet<PageModel> getChildren() throws IOException {
         String regexLink = "(http|ftp|https):\\/\\/([\\w_-]+(?:(?:\\.[\\w_-]+)+))([\\w.,@?^=%&:\\/~+#-]*[\\w@?^=%&\\/~+#-])";
@@ -53,18 +57,19 @@ public class PageModel {
 
         Document doc;
         if (getCode() == 200) {
-        doc = getPageContent();
+            doc = getPageContentInDoc();
+            setContent(doc.toString());
 
-        Elements elements = doc.select("a");
-        elements.forEach(e -> {
-            String link = e.attr("href");
-            String newLink = "";
-            if (link.startsWith("/")) {
-                newLink = site.getUrl() + link;
-            }
-            if (newLink.startsWith(site.getUrl()) && newLink.matches(regexLink) && !isFail(newLink)) {
-                links.add(link);
-            }
+            Elements elements = doc.select("a");
+            elements.forEach(e -> {
+                String link = e.attr("href");
+                String newLink = "";
+                if (link.startsWith("/")) {
+                    newLink = site.getUrl() + link;
+                }
+                if (newLink.startsWith(site.getUrl()) && newLink.matches(regexLink) && !isFail(newLink)) {
+                    links.add(link);
+                }
             });
             links.forEach(l -> {
                 PageModel page = new PageModel();
@@ -80,12 +85,12 @@ public class PageModel {
         return pages;
     }
 
-    public String pageUrl() {
+    public String getPageUrl() {
         return site.getUrl() + path;
     }
 
     public void checkStatusCode() throws IOException {
-        URL urlToTest = new URL(pageUrl());
+        URL urlToTest = new URL(getPageUrl());
         HttpURLConnection connection = (HttpURLConnection) urlToTest.openConnection();
         connection.connect();
         int statusCode = connection.getResponseCode();
@@ -93,16 +98,41 @@ public class PageModel {
         setCode(statusCode);
     }
 
-    public Document getPageContent() throws IOException {
+    public Document getPageContentInDoc() throws IOException {
         Document doc = null;
-        doc = Jsoup.connect(pageUrl())
+        doc = Jsoup.connect(getPageUrl())
                 .timeout(60000)
                 .userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6")
                 .referrer("http://www.google.com")
                 .get();
-        setContent(doc.toString());
         return doc;
     }
+
+    public HashMap<String, Integer> pageLemmatization () throws IOException {
+        return Lemmatizator.getInstance().lemmatization(content);
+    }
+
+    public CopyOnWriteArrayList collectLemmasIndexesSet() throws IOException {
+        HashMap<String, Integer> lemmas = pageLemmatization();
+        CopyOnWriteArrayList lemmasOnPage = new CopyOnWriteArrayList<>();
+        //HashSet<Lemma> lemmasOnPage = new HashSet<>();
+
+        lemmas.keySet().forEach(lemmaKey -> {
+            LemmaModel lemma = new LemmaModel();
+            lemma.setLemma(lemmaKey);
+            lemma.setSite(getSite());
+            lemma.setFrequency(1);
+            lemmasOnPage.add(lemma);
+
+            IndexModel index = new IndexModel();
+            index.setPage(this);
+            index.setLemma(lemma);
+            index.setRanks(lemmas.get(lemmaKey));
+            lemma.getIndexes().add(index);
+        });
+        return lemmasOnPage;
+    }
+
 
     public boolean isFail(String link) {
         link = link.toLowerCase();

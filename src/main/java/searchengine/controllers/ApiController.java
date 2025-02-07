@@ -5,7 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import searchengine.dto.indexing.IndexingResponse;
 import searchengine.dto.statistics.StatisticsResponse;
-import searchengine.services.IndexingServiceImpl;
+import searchengine.services.SiteListIndexingServiceImpl;
 import searchengine.services.StatisticsService;
 
 
@@ -14,7 +14,7 @@ import searchengine.services.StatisticsService;
 @RequiredArgsConstructor
 public class ApiController {
 
-    private final IndexingServiceImpl indexingService;
+    private final SiteListIndexingServiceImpl indexingService;
     private final StatisticsService statisticsService;
 
     @GetMapping("/statistics")
@@ -22,20 +22,24 @@ public class ApiController {
         return ResponseEntity.ok(statisticsService.getStatistics());
     }
 
-     @GetMapping("/startindexing")
+     @GetMapping("/startIndexing")
     public ResponseEntity<IndexingResponse> startIndexing() {
         return ResponseEntity.ok(indexingService.startIndexingResponse());
      }
 
-    @GetMapping("/stopindexing")
+    @GetMapping("/stopIndexing")
     public ResponseEntity<IndexingResponse> stopIndexing() {
         return ResponseEntity.ok(indexingService.stopIndexingResponse());
     }
 
-    @PostMapping("/indexpage")
+    @PostMapping("/indexPage")
     public ResponseEntity<IndexingResponse> indexPage(@RequestBody String urlPage) {
         return ResponseEntity.ok(indexingService.indexingPageResponse(urlPage));
     }
 
+    @GetMapping("/checkCollection")
+    public ResponseEntity<IndexingResponse> checkCollection() {
+        return ResponseEntity.ok(indexingService.checkCollectionResponse());
+    }
 
 }
