@@ -9,4 +9,5 @@ public class SearchResponse {
     private boolean result = true;
     private int count;
     private List<SearchDataItem> date;
+    private String error;
 }

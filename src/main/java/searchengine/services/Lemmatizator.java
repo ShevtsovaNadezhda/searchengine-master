@@ -62,6 +62,41 @@ public class Lemmatizator {
         return lemmas;
     }
 
+
+    public HashMap<String, Integer> lemmatization4Snippet (String text) {
+        String newText = html2text(text);
+        HashMap<String, Integer> searchMap = new HashMap<>();
+
+        if (!newText.isEmpty()) {
+            String[] words = newText.toLowerCase()
+                    .replaceAll("([^а-я\\s])", "")
+                    .trim()
+                    .split("\\s+");
+
+            for (String word : words) {
+                if (word.isBlank()) {
+                    continue;
+                }
+
+                List<String> wordBaseForms = luceneMorphology.getMorphInfo(word);
+                if (anyWordBaseBelongToParticle(wordBaseForms)) {
+                    continue;
+                }
+
+                List<String> normalForms = luceneMorphology.getNormalForms(word);
+                if (normalForms.isEmpty()) {
+                    continue;
+                }
+
+                String normalWord = normalForms.get(0);
+                int wordIndex = newText.toLowerCase().indexOf(word);
+                searchMap.put(normalWord, wordIndex);
+            }
+        }
+
+        return searchMap;
+    }
+
     private boolean anyWordBaseBelongToParticle(List<String> wordBaseForms) {
         return wordBaseForms.stream().anyMatch(this::hasParticleProperty);
     }

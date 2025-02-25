@@ -13,7 +13,7 @@ import java.util.*;
 @NoArgsConstructor
 @Getter
 @Setter
-public class LemmaModel {
+public class LemmaModel implements Comparable<LemmaModel>{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -45,5 +45,10 @@ public class LemmaModel {
     @Override
     public int hashCode() {
         return 37 * lemma.hashCode();
+    }
+
+    @Override
+    public int compareTo(LemmaModel lemma) {
+        return Integer.compare(this.frequency, lemma.frequency);
     }
 }

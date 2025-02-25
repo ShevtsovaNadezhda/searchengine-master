@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import searchengine.dto.indexing.IndexingResponse;
+import searchengine.dto.search.SearchResponse;
 import searchengine.dto.statistics.StatisticsResponse;
+import searchengine.services.SearchServiceImpl;
 import searchengine.services.SiteListIndexingServiceImpl;
 import searchengine.services.StatisticsService;
 
@@ -16,6 +18,7 @@ public class ApiController {
 
     private final SiteListIndexingServiceImpl indexingService;
     private final StatisticsService statisticsService;
+    private final SearchServiceImpl searchService;
 
     @GetMapping("/statistics")
     public ResponseEntity<StatisticsResponse> statistics() {
@@ -37,9 +40,13 @@ public class ApiController {
         return ResponseEntity.ok(indexingService.indexingPageResponse(urlPage));
     }
 
-    @GetMapping("/checkCollection")
-    public ResponseEntity<IndexingResponse> checkCollection() {
-        return ResponseEntity.ok(indexingService.checkCollectionResponse());
+    @GetMapping("/search")
+    public ResponseEntity<SearchResponse> search(@RequestParam String query,
+                                                 @RequestParam(required = false) String site,
+                                                 @RequestParam(required = false) Integer offset,
+                                                 @RequestParam(required = false) Integer limit) {
+        return ResponseEntity.ok(searchService.searching(query, site, offset, limit));
     }
+
 
 }

@@ -21,7 +21,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @NoArgsConstructor
 @Getter
 @Setter
-public class PageModel {
+public class PageModel implements Comparable<PageModel>{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -112,25 +112,46 @@ public class PageModel {
         return Lemmatizator.getInstance().lemmatization(content);
     }
 
-    public CopyOnWriteArrayList collectLemmasIndexesSet() throws IOException {
-        HashMap<String, Integer> lemmas = pageLemmatization();
-        CopyOnWriteArrayList lemmasOnPage = new CopyOnWriteArrayList<>();
-        //HashSet<Lemma> lemmasOnPage = new HashSet<>();
+    public String getTitlePage() {
+        return content.substring(content.indexOf("<title>") + 7, content.indexOf("</title>"));
+    }
 
-        lemmas.keySet().forEach(lemmaKey -> {
-            LemmaModel lemma = new LemmaModel();
-            lemma.setLemma(lemmaKey);
-            lemma.setSite(getSite());
-            lemma.setFrequency(1);
-            lemmasOnPage.add(lemma);
+    public String getSnippetPage(Set<String> queryLemmaSet) {
+        String snippet = "";
+        String contentText = Jsoup.parse(content).text();
+        HashMap<String, Integer> lemmaContent = null;
+        try {
+            lemmaContent = Lemmatizator.getInstance().lemmatization4Snippet(content);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        List<Integer> wordIndexes = new ArrayList<>();
+        for (String queryLemma : queryLemmaSet) {
+            for(String word : lemmaContent.keySet()) {
+                if(word.equals(queryLemma)) {
+                    wordIndexes.add(lemmaContent.get(word));
+                }
+            }
+        }
+        Collections.sort(wordIndexes);
+        for (Integer integer : wordIndexes) {
+            if(integer == -1) {
+                snippet = "Слово не нашлось";
+                continue;
+            }
+            if (integer >= 50 && (integer + 200) < contentText.length()) {
+                snippet = snippet + " ... " + contentText.substring(integer - 50, integer + 200);
+            } else if (integer < 50 && (integer + 200) < contentText.length()) {
+                snippet = snippet + " ... " + contentText.substring(0, integer + 200);
+            } else if (integer >= 50 && (integer + 200) >= contentText.length()) {
+                snippet = snippet + " ... " + contentText.substring(integer - 50, contentText.length() - 1);
+            } else {
+                snippet = contentText;
+            }
+        }
 
-            IndexModel index = new IndexModel();
-            index.setPage(this);
-            index.setLemma(lemma);
-            index.setRanks(lemmas.get(lemmaKey));
-            lemma.getIndexes().add(index);
-        });
-        return lemmasOnPage;
+
+        return snippet;
     }
 
 
@@ -149,11 +170,16 @@ public class PageModel {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PageModel pageModel = (PageModel) o;
-        return Objects.equals(path, pageModel.path);
+        return (Objects.equals(path, pageModel.path) && site.getId() == pageModel.getSite().getId());
     }
 
     @Override
     public int hashCode() {
         return 37 * path.hashCode();
+    }
+
+    @Override
+    public int compareTo(PageModel page) {
+        return CharSequence.compare(this.getPageUrl(), page.getPageUrl());
     }
 }

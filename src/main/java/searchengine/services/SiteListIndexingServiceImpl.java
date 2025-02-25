@@ -271,20 +271,4 @@ public class SiteListIndexingServiceImpl implements SiteListIndexingService {
         return response;
     }
 
-    public IndexingResponse checkCollectionResponse() {
-        IndexingResponse response = new IndexingResponse();
-        Iterable<PageModel> pageModelIterable = pageRepo.findAll();
-        for (PageModel page : pageModelIterable) {
-            try {
-                if (page.getCode() == 200) {
-                    collectLemmas(page);
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        response.setResult(true);
-        return response;
-    }
-
 }
