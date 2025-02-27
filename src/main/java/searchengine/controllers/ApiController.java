@@ -7,7 +7,7 @@ import searchengine.dto.indexing.IndexingResponse;
 import searchengine.dto.search.SearchResponse;
 import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.services.SearchServiceImpl;
-import searchengine.services.SiteListIndexingServiceImpl;
+import searchengine.services.IndexingServiceImpl;
 import searchengine.services.StatisticsService;
 
 
@@ -16,7 +16,7 @@ import searchengine.services.StatisticsService;
 @RequiredArgsConstructor
 public class ApiController {
 
-    private final SiteListIndexingServiceImpl indexingService;
+    private final IndexingServiceImpl indexingService;
     private final StatisticsService statisticsService;
     private final SearchServiceImpl searchService;
 
@@ -36,15 +36,15 @@ public class ApiController {
     }
 
     @PostMapping("/indexPage")
-    public ResponseEntity<IndexingResponse> indexPage(@RequestBody String urlPage) {
-        return ResponseEntity.ok(indexingService.indexingPageResponse(urlPage));
+    public ResponseEntity<IndexingResponse> indexPage(@RequestParam String url) {
+        return ResponseEntity.ok(indexingService.indexingPageResponse(url));
     }
 
     @GetMapping("/search")
     public ResponseEntity<SearchResponse> search(@RequestParam String query,
                                                  @RequestParam(required = false) String site,
-                                                 @RequestParam(required = false) Integer offset,
-                                                 @RequestParam(required = false) Integer limit) {
+                                                 @RequestParam(required = false, defaultValue = "0") int offset,
+                                                 @RequestParam(required = false, defaultValue = "10") int limit) {
         return ResponseEntity.ok(searchService.searching(query, site, offset, limit));
     }
 

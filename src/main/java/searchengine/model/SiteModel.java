@@ -5,6 +5,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
+
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -34,16 +36,12 @@ public class SiteModel {
     @Column(columnDefinition = "VARCHAR(255)", nullable = false)
     private String name;
 
-   /* @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinTable(name = "site_lemma",
-            joinColumns = @JoinColumn(name = "site_id"),
-            inverseJoinColumns = @JoinColumn(name = "lemma_id"))
-    private List<Lemma> lemmas = new ArrayList<>();*/
-
     @OneToMany (mappedBy="site", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch=FetchType.LAZY)
+    @OnDelete(action = org.hibernate.annotations.OnDeleteAction.CASCADE)
     private Set<PageModel> pages = new HashSet<>();
 
-    @OneToMany (cascade = CascadeType.REMOVE, mappedBy="site", fetch=FetchType.LAZY)
+    @OneToMany (mappedBy="site", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch=FetchType.LAZY)
+    @OnDelete(action = org.hibernate.annotations.OnDeleteAction.CASCADE)
     private Set<LemmaModel> lemmas = new HashSet<>();
 
     public void addPageInSet(PageModel page) {

@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
 
 import java.util.*;
 
@@ -19,11 +20,8 @@ public class LemmaModel implements Comparable<LemmaModel>{
     private int id;
 
     @ManyToOne
-    @JoinColumn(name="site_id", nullable = false, updatable = false)
+    @JoinColumn(name="site_id", nullable = false)
     private SiteModel site;
-
-    /*@ManyToMany(mappedBy = "lemmas")
-    private List<SiteModel> sites = new ArrayList<>();*/
 
     @Column(columnDefinition = "VARCHAR(255)", nullable = false)
     private String lemma;
@@ -31,7 +29,8 @@ public class LemmaModel implements Comparable<LemmaModel>{
     @Column(columnDefinition = "INT", nullable = false)
     private int frequency;
 
-    @OneToMany (cascade = CascadeType.REMOVE, mappedBy="lemma", fetch=FetchType.LAZY)
+    @OneToMany (mappedBy="lemma", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch=FetchType.LAZY)
+    @OnDelete(action = org.hibernate.annotations.OnDeleteAction.CASCADE)
     private Set<IndexModel> indexes = new HashSet<>();
 
     @Override

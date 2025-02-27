@@ -2,7 +2,6 @@ package searchengine.services;
 
 import org.apache.lucene.morphology.LuceneMorphology;
 import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
-import org.jsoup.Jsoup;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -21,36 +20,16 @@ public class Lemmatizator {
         this.luceneMorphology = luceneMorphology;
     }
 
-    public String html2text(String html) {
-        return Jsoup.parse(html).text();
-    }
-
     public HashMap<String, Integer> lemmatization(String text) {
-        String newText = html2text(text);
         HashMap<String, Integer> lemmas = new HashMap<>();
 
-        if (!newText.isEmpty()) {
-            String[] words = newText.toLowerCase()
-                    .replaceAll("([^а-я\\s])", "")
-                    .trim()
-                    .split("\\s+");
+        if (!text.isEmpty()) {
+            for (String word : transformText2Array(text)) {
+                String normalWord = checkWord(word);
 
-            for (String word : words) {
-                if (word.isBlank()) {
+                if(normalWord == null) {
                     continue;
                 }
-
-                List<String> wordBaseForms = luceneMorphology.getMorphInfo(word);
-                if (anyWordBaseBelongToParticle(wordBaseForms)) {
-                    continue;
-                }
-
-                List<String> normalForms = luceneMorphology.getNormalForms(word);
-                if (normalForms.isEmpty()) {
-                    continue;
-                }
-
-                String normalWord = normalForms.get(0);
 
                 if (lemmas.containsKey(normalWord)) {
                     lemmas.replace(normalWord, lemmas.get(normalWord) + 1);
@@ -63,38 +42,49 @@ public class Lemmatizator {
     }
 
 
-    public HashMap<String, Integer> lemmatization4Snippet (String text) {
-        String newText = html2text(text);
-        HashMap<String, Integer> searchMap = new HashMap<>();
+    public HashMap<String, int[]> lemmatization4Snippet (String text) {
+        HashMap<String, int[]> lemmas4Snippet = new HashMap<>();
 
-        if (!newText.isEmpty()) {
-            String[] words = newText.toLowerCase()
-                    .replaceAll("([^а-я\\s])", "")
-                    .trim()
-                    .split("\\s+");
+        if (!text.isEmpty()) {
+            for (String word : transformText2Array(text)) {
+                String normalWord = checkWord(word);
 
-            for (String word : words) {
-                if (word.isBlank()) {
+                if(normalWord == null) {
                     continue;
                 }
 
-                List<String> wordBaseForms = luceneMorphology.getMorphInfo(word);
-                if (anyWordBaseBelongToParticle(wordBaseForms)) {
-                    continue;
-                }
-
-                List<String> normalForms = luceneMorphology.getNormalForms(word);
-                if (normalForms.isEmpty()) {
-                    continue;
-                }
-
-                String normalWord = normalForms.get(0);
-                int wordIndex = newText.toLowerCase().indexOf(word);
-                searchMap.put(normalWord, wordIndex);
+                int[] wordInfo = new int[2];
+                wordInfo[0] = text.toLowerCase().indexOf(word); //индекс слова в первоначальном тексте страницы
+                wordInfo[1] = word.length(); //длина слова в первоначальном тексте
+                lemmas4Snippet.put(normalWord, wordInfo);
             }
         }
+        return lemmas4Snippet;
+    }
 
-        return searchMap;
+    private String[] transformText2Array(String text) {
+        return text.toLowerCase()
+                .replaceAll("([^а-я\\s])", "")
+                .trim()
+                .split("\\s+");
+    }
+
+    private String checkWord(String word) {
+        if (word.isBlank()) {
+            return null;
+        }
+
+        List<String> wordBaseForms = luceneMorphology.getMorphInfo(word);
+        if (anyWordBaseBelongToParticle(wordBaseForms)) {
+            return null;
+        }
+
+        List<String> normalForms = luceneMorphology.getNormalForms(word);
+        if (normalForms.isEmpty()) {
+            return null;
+        }
+
+        return normalForms.get(0);
     }
 
     private boolean anyWordBaseBelongToParticle(List<String> wordBaseForms) {

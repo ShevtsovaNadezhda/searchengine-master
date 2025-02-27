@@ -16,11 +16,11 @@ public class PageParser extends RecursiveAction {
 
     private SiteRepo siteRepo;
     private PageRepo pageRepo;
-    private SiteListIndexingServiceImpl indexingService;
+    private IndexingServiceImpl indexingService;
 
     public PageParser(SiteModel site, PageModel nodePage,
                       SiteRepo siteRepo, PageRepo pageRepo,
-                      SiteListIndexingServiceImpl indexingService) {
+                      IndexingServiceImpl indexingService) {
         this.site = site;
         this.nodePage = nodePage;
         this.siteRepo = siteRepo;
@@ -53,9 +53,6 @@ public class PageParser extends RecursiveAction {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-
-                //site.setStatusTime(LocalDateTime.now());
-                //siteRepo.save(site);
             }
 
             for (PageModel node : nodes) {

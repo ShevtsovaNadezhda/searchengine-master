@@ -2,9 +2,7 @@ package searchengine.services;
 
 import searchengine.dto.indexing.IndexingResponse;
 
-import java.io.IOException;
-
-public interface SiteListIndexingService {
+public interface IndexingService {
     public boolean getIndexing();
     void deleteSiteInBase();
 

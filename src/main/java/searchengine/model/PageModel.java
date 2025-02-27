@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -14,7 +15,6 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 @Entity
 @Table(name = "page", indexes = @Index(name = "path_index", columnList = "path"))
@@ -27,7 +27,7 @@ public class PageModel implements Comparable<PageModel>{
     private int id;
 
     @ManyToOne
-    @JoinColumn(name = "site_id", nullable = false) // updatable = false)
+    @JoinColumn(name = "site_id", nullable = false)
     private SiteModel site;
 
     @Column(columnDefinition = "VARCHAR(255)", nullable = false)
@@ -39,7 +39,8 @@ public class PageModel implements Comparable<PageModel>{
     @Column(columnDefinition = "MEDIUMTEXT", nullable = false)
     private String content;
 
-    @OneToMany(cascade = CascadeType.REMOVE, mappedBy = "page", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "page", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OnDelete(action = org.hibernate.annotations.OnDeleteAction.CASCADE)
     private Set<IndexModel> indexes = new HashSet<>();
 
     public HashSet<PageModel> getChildren() throws IOException {
@@ -108,8 +109,12 @@ public class PageModel implements Comparable<PageModel>{
         return doc;
     }
 
+    public String html2text(String htmlContent) {
+        return Jsoup.parse(htmlContent).text();
+    }
+
     public HashMap<String, Integer> pageLemmatization () throws IOException {
-        return Lemmatizator.getInstance().lemmatization(content);
+        return Lemmatizator.getInstance().lemmatization(html2text(content));
     }
 
     public String getTitlePage() {
@@ -118,39 +123,40 @@ public class PageModel implements Comparable<PageModel>{
 
     public String getSnippetPage(Set<String> queryLemmaSet) {
         String snippet = "";
-        String contentText = Jsoup.parse(content).text();
-        HashMap<String, Integer> lemmaContent = null;
+        String contentText = html2text(content);
+        HashMap<String, int[]> lemmaContent = null;
         try {
-            lemmaContent = Lemmatizator.getInstance().lemmatization4Snippet(content);
+            lemmaContent = Lemmatizator.getInstance().lemmatization4Snippet(contentText);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        List<Integer> wordIndexes = new ArrayList<>();
-        for (String queryLemma : queryLemmaSet) {
-            for(String word : lemmaContent.keySet()) {
-                if(word.equals(queryLemma)) {
-                    wordIndexes.add(lemmaContent.get(word));
-                }
-            }
-        }
-        Collections.sort(wordIndexes);
-        for (Integer integer : wordIndexes) {
-            if(integer == -1) {
+
+        lemmaContent.keySet().retainAll(queryLemmaSet);
+        for (String word : lemmaContent.keySet()) {
+            int[] wordIndexes = lemmaContent.get(word);
+            int startSnippet = wordIndexes[0] - 50;
+            int endSnippet = wordIndexes[0] + 50;
+            int startWord = wordIndexes[0];
+            int endWord = wordIndexes[0] + wordIndexes[1];
+            String wordBoltFont = "<b>".concat(contentText.substring(startWord, endWord)).concat("</b>");
+
+            if (wordIndexes[0] == -1) {
                 snippet = "Слово не нашлось";
                 continue;
             }
-            if (integer >= 50 && (integer + 200) < contentText.length()) {
-                snippet = snippet + " ... " + contentText.substring(integer - 50, integer + 200);
-            } else if (integer < 50 && (integer + 200) < contentText.length()) {
-                snippet = snippet + " ... " + contentText.substring(0, integer + 200);
-            } else if (integer >= 50 && (integer + 200) >= contentText.length()) {
-                snippet = snippet + " ... " + contentText.substring(integer - 50, contentText.length() - 1);
+
+            if (startSnippet >= 0) {
+                snippet = snippet.concat("...").concat(contentText.substring(startSnippet, startWord).concat(wordBoltFont));
             } else {
-                snippet = contentText;
+                snippet = snippet.concat(contentText.substring(0, startWord).concat(wordBoltFont));
+            }
+
+            if (endSnippet < contentText.length()) {
+                snippet = snippet.concat(contentText.substring(endWord, endSnippet)).concat("...");
+            } else {
+                snippet = snippet.concat(contentText.substring(endWord, contentText.length() - 1));
             }
         }
-
-
         return snippet;
     }
 

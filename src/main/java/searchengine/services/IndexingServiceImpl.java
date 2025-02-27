@@ -2,6 +2,7 @@ package searchengine.services;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import searchengine.config.SitesList;
 import searchengine.dto.indexing.IndexingResponse;
 import searchengine.model.*;
 import searchengine.repositories.IndexRepo;
@@ -19,13 +20,15 @@ import java.util.concurrent.ForkJoinPool;
 
 @Service
 @RequiredArgsConstructor
-public class SiteListIndexingServiceImpl implements SiteListIndexingService {
+public class IndexingServiceImpl implements IndexingService {
     private static volatile boolean isIndexing = false;
     private final SiteServiceImpl siteService;
     private final SiteRepo siteRepo;
     private final PageRepo pageRepo;
     private final LemmaRepo lemmaRepo;
     private final IndexRepo indexRepo;
+
+    private final SitesList sites;
 
 
     @Override
