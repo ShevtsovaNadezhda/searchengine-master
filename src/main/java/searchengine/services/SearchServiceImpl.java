@@ -37,7 +37,7 @@ public class SearchServiceImpl implements SearchService {
             TreeMap<PageModel, Float> resultPages
                     = findResultPages(findQueryLemmasInBD(queryLemmasSet, site), queryLemmasSet.size());
 
-            if(!resultPages.isEmpty()) {
+            if (!resultPages.isEmpty()) {
                 float maxRank = resultPages.values().stream().max(Float::compare).get();
                 for (PageModel page : resultPages.keySet()) {
                     SearchDataItem searchDataItem = new SearchDataItem();
@@ -52,7 +52,7 @@ public class SearchServiceImpl implements SearchService {
                 Collections.sort(dataList, Collections.reverseOrder());
             }
             searchResponse.setCount(dataList.size());
-            if((offset + limit) <= dataList.size()) {
+            if ((offset + limit) <= dataList.size()) {
                 searchResponse.setData(dataList.subList(offset, offset + limit));
             } else {
                 searchResponse.setData(dataList.subList(offset, dataList.size()));

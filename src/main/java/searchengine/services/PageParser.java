@@ -36,7 +36,7 @@ public class PageParser extends RecursiveAction {
             throw new RuntimeException(e);
         }
 
-        if(indexingService.getIndexing()) {
+        if (indexingService.getIndexing()) {
             HashSet<PageParser> taskList = new HashSet<>();
             HashSet<PageModel> nodes = null;
             try {

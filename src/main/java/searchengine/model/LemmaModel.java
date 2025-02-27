@@ -14,13 +14,13 @@ import java.util.*;
 @NoArgsConstructor
 @Getter
 @Setter
-public class LemmaModel implements Comparable<LemmaModel>{
+public class LemmaModel implements Comparable<LemmaModel> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @ManyToOne
-    @JoinColumn(name="site_id", nullable = false)
+    @JoinColumn(name = "site_id", nullable = false)
     private SiteModel site;
 
     @Column(columnDefinition = "VARCHAR(255)", nullable = false)
@@ -29,7 +29,7 @@ public class LemmaModel implements Comparable<LemmaModel>{
     @Column(columnDefinition = "INT", nullable = false)
     private int frequency;
 
-    @OneToMany (mappedBy="lemma", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch=FetchType.LAZY)
+    @OneToMany(mappedBy = "lemma", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
     @OnDelete(action = org.hibernate.annotations.OnDeleteAction.CASCADE)
     private Set<IndexModel> indexes = new HashSet<>();
 

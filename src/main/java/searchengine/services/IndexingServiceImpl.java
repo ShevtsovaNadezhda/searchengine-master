@@ -123,6 +123,7 @@ public class IndexingServiceImpl implements IndexingService {
         return response;
     }
 
+    @Override
     public void indexingPage(String url) throws IOException {
         if (urlContainsInSiteRepo(url)) {
             if (urlContainsInPageRepo(url)) {
@@ -137,6 +138,7 @@ public class IndexingServiceImpl implements IndexingService {
         }
     }
 
+    @Override
     public void collectLemmas(PageModel page) throws IOException {
         HashMap<String, Integer> lemmas = page.pageLemmatization();
 
@@ -168,10 +170,12 @@ public class IndexingServiceImpl implements IndexingService {
 
     }
 
+    @Override
     public boolean urlContainsInConfig(String url) {
         return siteService.getSiteList().stream().anyMatch(siteModel -> url.contains(siteModel.getUrl()));
     }
 
+    @Override
     public boolean urlContainsInSiteRepo(String url) {
         Iterable<SiteModel> siteModelIterable = siteRepo.findAll();
         boolean urlInSiteRepo = false;
@@ -184,6 +188,7 @@ public class IndexingServiceImpl implements IndexingService {
         return urlInSiteRepo;
     }
 
+    @Override
     public boolean urlContainsInPageRepo(String url) {
         Iterable<PageModel> pageModelIterable = pageRepo.findAll();
         boolean urlInPageRepo = false;
@@ -196,6 +201,7 @@ public class IndexingServiceImpl implements IndexingService {
         return urlInPageRepo;
     }
 
+    @Override
     public void addUrlInSiteRepo(String url) {
         List<SiteModel> sites = siteService.getSiteList();
         for (SiteModel site : sites) {
@@ -208,6 +214,7 @@ public class IndexingServiceImpl implements IndexingService {
         }
     }
 
+    @Override
     public void addUrlInPageRepo(String url) throws IOException {
         PageModel newPage = new PageModel();
 
@@ -231,6 +238,7 @@ public class IndexingServiceImpl implements IndexingService {
         }
     }
 
+    @Override
     public void deletePageInfoInBase(String url) throws IOException {
         Iterable<PageModel> pageIterable = pageRepo.findAll();
         for (PageModel page : pageIterable) {

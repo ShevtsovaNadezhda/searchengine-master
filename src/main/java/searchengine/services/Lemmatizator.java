@@ -12,7 +12,7 @@ public class Lemmatizator {
     private static final String[] particlesNames = new String[]{"МЕЖД", "ПРЕДЛ", "СОЮЗ", "ЧАСТ"};
 
     public static Lemmatizator getInstance() throws IOException {
-        LuceneMorphology morphology= new RussianLuceneMorphology();
+        LuceneMorphology morphology = new RussianLuceneMorphology();
         return new Lemmatizator(morphology);
     }
 
@@ -27,7 +27,7 @@ public class Lemmatizator {
             for (String word : transformText2Array(text)) {
                 String normalWord = checkWord(word);
 
-                if(normalWord == null) {
+                if (normalWord == null) {
                     continue;
                 }
 
@@ -42,14 +42,14 @@ public class Lemmatizator {
     }
 
 
-    public HashMap<String, int[]> lemmatization4Snippet (String text) {
+    public HashMap<String, int[]> lemmatization4Snippet(String text) {
         HashMap<String, int[]> lemmas4Snippet = new HashMap<>();
 
         if (!text.isEmpty()) {
             for (String word : transformText2Array(text)) {
                 String normalWord = checkWord(word);
 
-                if(normalWord == null) {
+                if (normalWord == null) {
                     continue;
                 }
 

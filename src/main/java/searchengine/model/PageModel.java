@@ -21,7 +21,7 @@ import java.util.*;
 @NoArgsConstructor
 @Getter
 @Setter
-public class PageModel implements Comparable<PageModel>{
+public class PageModel implements Comparable<PageModel> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -113,7 +113,7 @@ public class PageModel implements Comparable<PageModel>{
         return Jsoup.parse(htmlContent).text();
     }
 
-    public HashMap<String, Integer> pageLemmatization () throws IOException {
+    public HashMap<String, Integer> pageLemmatization() throws IOException {
         return Lemmatizator.getInstance().lemmatization(html2text(content));
     }
 

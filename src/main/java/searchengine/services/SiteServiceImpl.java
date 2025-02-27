@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class SiteServiceImpl implements SiteService{
+public class SiteServiceImpl implements SiteService {
     private final SitesList sites;
 
     public SiteServiceImpl(SitesList sites) {

@@ -36,11 +36,11 @@ public class SiteModel {
     @Column(columnDefinition = "VARCHAR(255)", nullable = false)
     private String name;
 
-    @OneToMany (mappedBy="site", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch=FetchType.LAZY)
+    @OneToMany(mappedBy = "site", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
     @OnDelete(action = org.hibernate.annotations.OnDeleteAction.CASCADE)
     private Set<PageModel> pages = new HashSet<>();
 
-    @OneToMany (mappedBy="site", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch=FetchType.LAZY)
+    @OneToMany(mappedBy = "site", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
     @OnDelete(action = org.hibernate.annotations.OnDeleteAction.CASCADE)
     private Set<LemmaModel> lemmas = new HashSet<>();
 

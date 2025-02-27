@@ -17,11 +17,11 @@ public class IndexModel {
     private int id;
 
     @ManyToOne
-    @JoinColumn(name="page_id", nullable = false)
+    @JoinColumn(name = "page_id", nullable = false)
     private PageModel page;
 
     @ManyToOne
-    @JoinColumn(name="lemma_id", nullable = false)
+    @JoinColumn(name = "lemma_id", nullable = false)
     private LemmaModel lemma;
 
     @Column(nullable = false)
