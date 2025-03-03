@@ -1,12 +1,14 @@
-package searchengine.services;
+package searchengine.services.implementation;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import searchengine.dto.search.SearchDataItem;
 import searchengine.dto.search.SearchResponse;
+import searchengine.exceptions.SearchException;
 import searchengine.model.LemmaModel;
 import searchengine.model.PageModel;
 import searchengine.repositories.LemmaRepo;
+import searchengine.services.SearchService;
 
 import java.io.IOException;
 import java.util.*;
@@ -18,13 +20,12 @@ public class SearchServiceImpl implements SearchService {
     private final LemmaRepo lemmaRepo;
 
     @Override
-    public SearchResponse searching(String query, String site, int offset, int limit) {
+    public SearchResponse searching(String query, String site, int offset, int limit) throws SearchException {
         List<SearchDataItem> dataList = new ArrayList<>();
         SearchResponse searchResponse = new SearchResponse();
 
         if (query.isEmpty()) {
-            searchResponse.setResult(false);
-            searchResponse.setError("Задан пустой поисковый запрос");
+            throw new SearchException("Задан пустой поисковый запрос");
         } else {
             Set<String> queryLemmasSet = null; //Список лемм из поискового запроса
 
@@ -66,7 +67,8 @@ public class SearchServiceImpl implements SearchService {
 
         Iterable<LemmaModel> lemmaRepoIterable = lemmaRepo.findAll();
 
-        //Находим в БД леммы, которые отвечают запросу и помещаем их в дерево, где ключ - это siteId, значение - список лемм.
+        //Находим в БД леммы, которые отвечают запросу и помещаем их в дерево,
+        // где ключ - это siteId, значение - список лемм.
         queryLemmasSet.forEach(queryLemma -> {
             for (LemmaModel lemma : lemmaRepoIterable) {
                 if ((site == null || site.equals(lemma.getSite().getUrl()))

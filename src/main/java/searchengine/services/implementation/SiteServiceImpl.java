@@ -1,8 +1,9 @@
-package searchengine.services;
+package searchengine.services.implementation;
 
 import org.springframework.stereotype.Service;
 import searchengine.config.SitesList;
 import searchengine.model.SiteModel;
+import searchengine.services.SiteService;
 
 import java.util.ArrayList;
 import java.util.List;

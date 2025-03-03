@@ -1,6 +1,7 @@
 package searchengine.services;
 
 import searchengine.dto.indexing.IndexingResponse;
+import searchengine.exceptions.IndexingException;
 import searchengine.model.PageModel;
 
 import java.io.IOException;
@@ -12,9 +13,9 @@ public interface IndexingService {
 
     void indexingSiteList();
 
-    IndexingResponse startIndexingResponse();
+    IndexingResponse startIndexingResponse() throws Exception;
 
-    IndexingResponse stopIndexingResponse();
+    IndexingResponse stopIndexingResponse() throws IndexingException;
 
     boolean urlContainsInConfig(String url);
 
@@ -28,7 +29,7 @@ public interface IndexingService {
 
     void deletePageInfoInBase(String url) throws IOException;
 
-    IndexingResponse indexingPageResponse(String url);
+    IndexingResponse indexingPageResponse(String url) throws IndexingException;
 
     void indexingPage(String url) throws IOException;
 

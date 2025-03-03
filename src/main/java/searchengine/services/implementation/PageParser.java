@@ -1,4 +1,4 @@
-package searchengine.services;
+package searchengine.services.implementation;
 
 import searchengine.model.PageModel;
 import searchengine.model.SiteModel;

@@ -1,14 +1,15 @@
-package searchengine.services;
+package searchengine.services.implementation;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import searchengine.config.SitesList;
 import searchengine.dto.indexing.IndexingResponse;
+import searchengine.exceptions.IndexingException;
 import searchengine.model.*;
 import searchengine.repositories.IndexRepo;
 import searchengine.repositories.LemmaRepo;
 import searchengine.repositories.PageRepo;
 import searchengine.repositories.SiteRepo;
+import searchengine.services.IndexingService;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -27,9 +28,6 @@ public class IndexingServiceImpl implements IndexingService {
     private final PageRepo pageRepo;
     private final LemmaRepo lemmaRepo;
     private final IndexRepo indexRepo;
-
-    private final SitesList sites;
-
 
     @Override
     public boolean getIndexing() {
@@ -93,34 +91,30 @@ public class IndexingServiceImpl implements IndexingService {
     }
 
     @Override
-    public IndexingResponse startIndexingResponse() {
+    public IndexingResponse startIndexingResponse() throws Exception {
         if (isIndexing) {
-            IndexingResponse response = new IndexingResponse();
-            response.setResult(false);
-            response.setError("Индексация уже запущена");
-            return response;
+            throw new IndexingException("Индексация уже запущена");
         } else {
             isIndexing = true;
             deleteSiteInBase();
             indexingSiteList();
 
             IndexingResponse response = new IndexingResponse();
-            response.setResult(true);
+            response.setMessage("Индексация запущена успешно");
             return response;
         }
     }
 
     @Override
-    public IndexingResponse stopIndexingResponse() {
+    public IndexingResponse stopIndexingResponse() throws IndexingException {
         IndexingResponse response = new IndexingResponse();
         if (isIndexing) {
             isIndexing = false;
-            response.setResult(true);
+            response.setMessage("Индексация остановлена");
+            return response;
         } else {
-            response.setResult(false);
-            response.setError("Индексация не запущена");
+            throw new IndexingException("Индексация не запущена");
         }
-        return response;
     }
 
     @Override
@@ -266,7 +260,7 @@ public class IndexingServiceImpl implements IndexingService {
     }
 
     @Override
-    public IndexingResponse indexingPageResponse(String url) {
+    public IndexingResponse indexingPageResponse(String url) throws IndexingException {
         IndexingResponse response = new IndexingResponse();
         if (urlContainsInConfig(url)) {
             try {
@@ -274,12 +268,11 @@ public class IndexingServiceImpl implements IndexingService {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            response.setResult(true);
+            response.setMessage("Страница успешно проиндексирована");
+            return response;
         } else {
-            response.setResult(false);
-            response.setError("Данная страница находится за пределами сайтов, указанных в конфигурационном файле");
+            throw new IndexingException("Данная страница находится за пределами сайтов, указанных в конфигурационном файле");
         }
-        return response;
     }
 
 }

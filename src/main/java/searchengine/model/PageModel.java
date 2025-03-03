@@ -9,7 +9,7 @@ import org.hibernate.annotations.OnDelete;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
-import searchengine.services.Lemmatizator;
+import searchengine.services.implementation.Lemmatizator;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
