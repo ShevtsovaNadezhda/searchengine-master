@@ -7,6 +7,7 @@
 
 - [Spring Boot Framework](https://docs.spring.io/spring-boot/index.html)
 - [Apache Maven](https://maven.apache.org/)
+- [Liquibase](https://www.liquibase.com/)
 - [Hibernate](https://hibernate.org/)
 - [Lombok](https://projectlombok.org/)
 - [JSOUP](https://jsoup.org/)
