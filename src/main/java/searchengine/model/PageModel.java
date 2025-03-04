@@ -36,7 +36,7 @@ public class PageModel implements Comparable<PageModel> {
     @Column(columnDefinition = "INT", nullable = false)
     private int code;
 
-    @Column(columnDefinition = "MEDIUMTEXT", nullable = false)
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
     @OneToMany(mappedBy = "page", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
